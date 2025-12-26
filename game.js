@@ -4,6 +4,10 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// Demo mode detection from URL
+const urlParams = new URLSearchParams(window.location.search);
+const demoMode = urlParams.get('demo'); // 'gameplay' or 'gameover'
+
 // Game constants
 const GRAVITY = 0.3;
 const BALL_RADIUS = 20;
@@ -356,13 +360,90 @@ function createMergeEffect(x, y, value) {
 function init() {
     soundSystem.init();
     updateScore();
-    spawnNextBall();
 
-    if (!showTutorial) {
-        gameStarted = true;
+    // Check for demo modes
+    if (demoMode === 'gameplay') {
+        setupGameplayDemo();
+    } else if (demoMode === 'gameover') {
+        setupGameOverDemo();
+    } else {
+        spawnNextBall();
+        if (!showTutorial) {
+            gameStarted = true;
+        }
     }
 
     gameLoop();
+}
+
+// Demo mode: Pre-populate with colorful balls almost at top
+function setupGameplayDemo() {
+    gameStarted = true;
+    showTutorial = false;
+    score = 2847; // Impressive score
+
+    // Create balls with various values stacked nicely
+    const ballPositions = [
+        { x: 150, y: 580, value: 64 },
+        { x: 300, y: 580, value: 128 },
+        { x: 225, y: 540, value: 32 },
+        { x: 150, y: 500, value: 16 },
+        { x: 300, y: 500, value: 64 },
+        { x: 100, y: 460, value: 256 },
+        { x: 350, y: 460, value: 128 },
+        { x: 225, y: 420, value: 512 },
+        { x: 150, y: 380, value: 64 },
+        { x: 300, y: 380, value: 32 },
+        { x: 100, y: 340, value: 128 },
+        { x: 350, y: 340, value: 16 },
+        { x: 225, y: 300, value: 256 },
+        { x: 150, y: 260, value: 8 },
+        { x: 300, y: 260, value: 64 },
+        { x: 225, y: 220, value: 32 },
+        { x: 150, y: 180, value: 128 },
+        { x: 300, y: 180, value: 16 },
+        { x: 225, y: 140, value: 4 }, // Close to danger line!
+    ];
+
+    ballPositions.forEach(pos => {
+        const ball = new Ball(pos.x, pos.y, pos.value);
+        ball.hasBeenShot = true;
+        ball.canMerge = true;
+        balls.push(ball);
+    });
+
+    // Spawn next ball ready to shoot
+    spawnNextBall();
+    updateScore();
+}
+
+// Demo mode: Show game over screen
+function setupGameOverDemo() {
+    gameStarted = true;
+    showTutorial = false;
+    score = 3542; // High score for screenshot
+    highScore = 4128; // Previous high score
+
+    // Create some balls
+    const ballPositions = [
+        { x: 225, y: 100, value: 256 }, // Above danger line
+        { x: 150, y: 150, value: 128 },
+        { x: 300, y: 200, value: 64 },
+    ];
+
+    ballPositions.forEach(pos => {
+        const ball = new Ball(pos.x, pos.y, pos.value);
+        ball.hasBeenShot = true;
+        ball.canMerge = true;
+        balls.push(ball);
+    });
+
+    updateScore();
+
+    // Trigger game over after a short delay
+    setTimeout(() => {
+        triggerGameOver();
+    }, 500);
 }
 
 function spawnNextBall() {
