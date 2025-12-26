@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoot & Merge - Play Now!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+        }
+
+        .game-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .game-header h1 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: #faf8ef;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .game-info {
+            padding: 15px;
+            text-align: center;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .instructions {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 300px;
+        }
+
+        #gameOver h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #ff6b6b;
+        }
+
+        #gameOver .final-score {
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 500px) {
+            .game-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🎯 Shoot & Merge</h1>
+            <div class="score-display">
+                <div>Score: <strong id="score">0</strong></div>
+                <div>Best: <strong id="highScore">0</strong></div>
+            </div>
+        </div>
+
+        <div style="position: relative;">
+            <canvas id="gameCanvas" width="450" height="700"></canvas>
+
+            <div id="gameOver">
+                <h2>Game Over!</h2>
+                <div class="final-score">Score: <strong id="finalScore">0</strong></div>
+                <div class="final-score">Best: <strong id="finalBest">0</strong></div>
+                <button class="btn" onclick="restartGame()">Play Again</button>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <div class="instructions">
+                <strong>How to Play:</strong> Drag to aim, release to shoot! Match numbers to merge. Don't let them reach the top!
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
