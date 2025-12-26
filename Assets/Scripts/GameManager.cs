@@ -10,33 +10,25 @@ public class GameManager : MonoBehaviour
     public int highScore = 0;
     public bool isGameOver = false;
 
-    [Header("Game Settings")]
-    public float gameOverHeight = 7f; // Y position where game ends
+    [Header("Settings")]
+    public float gameOverHeight = 7f;
     public GameObject ballPrefab;
+    public GameObject mergeParticlePrefab;
 
     [Header("References")]
     public UIManager uiManager;
     public BallShooter ballShooter;
-
-    [Header("Effects")]
-    public GameObject mergeParticlePrefab;
+    public Camera mainCamera; // For screen shake
 
     private const string HIGH_SCORE_KEY = "ShootMerge_HighScore";
 
     void Awake()
     {
-        // Singleton pattern
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
 
         LoadHighScore();
+        if (mainCamera == null) mainCamera = Camera.main;
     }
 
     void Start()
@@ -46,44 +38,59 @@ public class GameManager : MonoBehaviour
             uiManager.UpdateScore(currentScore);
             uiManager.UpdateHighScore(highScore);
         }
-
-        // Start checking for game over
         InvokeRepeating(nameof(CheckGameOver), 2f, 0.5f);
     }
 
     public void OnBallsMerged(int newValue, Vector3 position)
     {
-        // Add to score
         int pointsEarned = newValue;
         currentScore += pointsEarned;
 
-        // Update UI
         if (uiManager != null)
         {
             uiManager.UpdateScore(currentScore);
             uiManager.ShowMergeEffect(position, "+" + pointsEarned);
         }
 
-        // Check high score
         if (currentScore > highScore)
         {
             highScore = currentScore;
             SaveHighScore();
-            if (uiManager != null)
-            {
-                uiManager.UpdateHighScore(highScore);
-            }
+            if (uiManager != null) uiManager.UpdateHighScore(highScore);
         }
 
-        // Spawn merged ball
         SpawnMergedBall(newValue, position);
 
-        // Spawn particle effect
+        // Screen Shake & Particles
+        StartCoroutine(ShakeCamera(0.1f, 0.1f));
+
         if (mergeParticlePrefab != null)
         {
-            GameObject particles = Instantiate(mergeParticlePrefab, position, Quaternion.identity);
-            Destroy(particles, 2f);
+            GameObject p = Instantiate(mergeParticlePrefab, position, Quaternion.identity);
+            Destroy(p, 2f);
         }
+    }
+
+    // Screen Shake Effect
+    System.Collections.IEnumerator ShakeCamera(float duration, float magnitude)
+    {
+        Vector3 originalPos = new Vector3(0, 0, -10); // Standard camera position
+        float elapsed = 0.0f;
+
+        while (elapsed < duration)
+        {
+            float x = Random.Range(-1f, 1f) * magnitude;
+            float y = Random.Range(-1f, 1f) * magnitude;
+
+            if (mainCamera != null)
+                mainCamera.transform.position = originalPos + new Vector3(x, y, 0);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (mainCamera != null)
+            mainCamera.transform.position = originalPos;
     }
 
     void SpawnMergedBall(int value, Vector3 position)
@@ -99,10 +106,10 @@ public class GameManager : MonoBehaviour
             ballScript.hasBeenShot = true;
 
             Rigidbody2D rb = newBall.GetComponent<Rigidbody2D>();
-            if (rb != null)
-            {
-                rb.gravityScale = 1.5f;
-            }
+            if (rb != null) rb.gravityScale = 1.5f;
+
+            // Pop effect (requires LeanTween or DOTween)
+            // LeanTween.scale(newBall, Vector3.one * 1.2f, 0.1f).setEasePunch();
         }
     }
 
@@ -110,14 +117,11 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver) return;
 
-        // Find all balls in scene
         NumberBall[] balls = FindObjectsOfType<NumberBall>();
-
         foreach (NumberBall ball in balls)
         {
             if (ball.hasBeenShot && ball.transform.position.y >= gameOverHeight)
             {
-                // Check if ball is relatively stationary (settled)
                 Rigidbody2D rb = ball.GetComponent<Rigidbody2D>();
                 if (rb != null && rb.velocity.magnitude < 0.5f)
                 {
@@ -133,10 +137,12 @@ public class GameManager : MonoBehaviour
         isGameOver = true;
         CancelInvoke(nameof(CheckGameOver));
 
-        if (uiManager != null)
-        {
-            uiManager.ShowGameOver();
-        }
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayGameOver();
+
+        // Big screen shake on game over
+        StartCoroutine(ShakeCamera(0.5f, 0.3f));
+
+        if (uiManager != null) uiManager.ShowGameOver();
 
         Debug.Log("Game Over! Final Score: " + currentScore);
     }
@@ -159,9 +165,6 @@ public class GameManager : MonoBehaviour
 
     void OnDestroy()
     {
-        if (Instance == this)
-        {
-            Instance = null;
-        }
+        if (Instance == this) Instance = null;
     }
 }

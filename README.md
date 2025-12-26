@@ -106,6 +106,17 @@ Assets/
    - Ball Prefab: Your NumberBall prefab
    - Merge Particle Prefab: Your MergeParticle prefab
    - Ball Shooter: Drag BallShooter object from scene
+   - Main Camera: Drag Main Camera (for screen shake effect)
+
+5. **Create AudioManager**:
+   - Create Empty GameObject → Rename "AudioManager"
+   - Add script: `AudioManager.cs`
+   - Audio clips will auto-create if not assigned
+   - **Optional**: Add your own sound effects:
+     - Shoot Clip: .wav/.mp3 file for shooting sound
+     - Merge Clip: .wav/.mp3 file for merge sound
+     - Game Over Clip: .wav/.mp3 file for game over
+   - **Note**: Game works without audio files (silent mode)
 
 ### Step 5: Create UI
 

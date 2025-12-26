@@ -4,17 +4,15 @@ public class BallShooter : MonoBehaviour
 {
     [Header("Shooting Settings")]
     public float shootForce = 15f;
-    public float maxAimDistance = 3f;
     public GameObject ballPrefab;
-
-    [Header("Ball Spawn")]
     public Transform shootPoint;
-    public int[] possibleValues = { 2, 2, 2, 4, 4, 8 }; // Weighted probability
 
-    [Header("Visual Feedback")]
+    [Header("Game Logic")]
+    public int[] possibleValues = { 2, 2, 2, 4, 4, 8 };
+
+    [Header("Visuals")]
     public LineRenderer aimLine;
     public int aimLineSegments = 20;
-    public float aimLineLength = 5f;
 
     private NumberBall currentBall;
     private Vector2 shootDirection;
@@ -25,7 +23,6 @@ public class BallShooter : MonoBehaviour
     {
         mainCamera = Camera.main;
         SpawnNewBall();
-
         if (aimLine != null)
         {
             aimLine.positionCount = aimLineSegments;
@@ -35,27 +32,14 @@ public class BallShooter : MonoBehaviour
 
     void Update()
     {
-        if (GameManager.Instance != null && GameManager.Instance.isGameOver)
-        {
-            return;
-        }
-
+        if (GameManager.Instance != null && GameManager.Instance.isGameOver) return;
         HandleInput();
     }
 
     void HandleInput()
     {
-        // Mouse/Touch input
-        if (Input.GetMouseButtonDown(0))
-        {
-            isDragging = true;
-        }
-
-        if (Input.GetMouseButton(0) && isDragging)
-        {
-            UpdateAim();
-        }
-
+        if (Input.GetMouseButtonDown(0)) isDragging = true;
+        if (Input.GetMouseButton(0) && isDragging) UpdateAim();
         if (Input.GetMouseButtonUp(0) && isDragging)
         {
             ShootBall();
@@ -69,17 +53,10 @@ public class BallShooter : MonoBehaviour
         mousePos.z = 0;
 
         Vector2 direction = (mousePos - shootPoint.position).normalized;
+        if (direction.y < 0.1f) direction.y = 0.1f; // Clamp to upward only
 
-        // Restrict shooting to upward directions only
-        if (direction.y < 0.1f)
-        {
-            direction.y = 0.1f;
-            direction.Normalize();
-        }
+        shootDirection = direction.normalized;
 
-        shootDirection = direction;
-
-        // Show aim line
         if (aimLine != null)
         {
             aimLine.enabled = true;
@@ -95,11 +72,8 @@ public class BallShooter : MonoBehaviour
         for (int i = 0; i < aimLineSegments; i++)
         {
             float time = i * 0.1f;
-
-            // Physics calculation: position = initialPos + velocity*time + 0.5*gravity*time^2
             Vector3 pos = startPos + velocity * time;
-            pos.y += 0.5f * Physics2D.gravity.y * 1.5f * time * time; // 1.5f is gravity scale
-
+            pos.y += 0.5f * Physics2D.gravity.y * 1.5f * time * time; // 1.5f matches ball gravity
             aimLine.SetPosition(i, pos);
         }
     }
@@ -110,12 +84,11 @@ public class BallShooter : MonoBehaviour
         {
             currentBall.Shoot(shootDirection, shootForce);
 
-            if (aimLine != null)
-            {
-                aimLine.enabled = false;
-            }
+            // Sound Effect
+            if (AudioManager.Instance != null) AudioManager.Instance.PlayShoot();
 
-            // Spawn next ball after a short delay
+            if (aimLine != null) aimLine.enabled = false;
+
             Invoke(nameof(SpawnNewBall), 0.5f);
             currentBall = null;
         }
@@ -123,28 +96,15 @@ public class BallShooter : MonoBehaviour
 
     void SpawnNewBall()
     {
-        if (ballPrefab == null || shootPoint == null)
-        {
-            Debug.LogError("Ball prefab or shoot point not assigned!");
-            return;
-        }
+        if (ballPrefab == null || shootPoint == null) return;
 
         GameObject ballObj = Instantiate(ballPrefab, shootPoint.position, Quaternion.identity);
         currentBall = ballObj.GetComponent<NumberBall>();
 
         if (currentBall != null)
         {
-            // Random value from weighted array
             int randomValue = possibleValues[Random.Range(0, possibleValues.Length)];
             currentBall.Initialize(randomValue);
-        }
-    }
-
-    public void SetNextBallValue(int value)
-    {
-        if (currentBall != null)
-        {
-            currentBall.Initialize(value);
         }
     }
 }
