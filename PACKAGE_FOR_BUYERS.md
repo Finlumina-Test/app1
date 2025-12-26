@@ -11,6 +11,7 @@ ShootAndMerge_Complete/
 ├── index.html                   ← Landing page / demo showcase
 ├── README.md                    ← Setup instructions
 ├── QUICK_START.md              ← 5-minute quick start
+├── RESKIN_GUIDE.md             ← Theme customization guide
 ├── .gitignore                   ← Unity gitignore
 └── Assets/
     ├── Scripts/
@@ -29,7 +30,7 @@ ShootAndMerge_Complete/
 
 ```
 SELLING_GUIDE.md     ← Your internal selling strategy
-RESKIN_GUIDE.md      ← Keep as bonus OR remove
+PACKAGE_FOR_BUYERS.md ← Your internal instructions
 .git/                ← Git repository
 ```
 
@@ -122,6 +123,7 @@ source code. Deploy the web version today, build for mobile tomorrow.
 ### 3. Complete Documentation
 - **README.md** - Full Unity setup guide (step-by-step)
 - **QUICK_START.md** - Get running in 5 minutes
+- **RESKIN_GUIDE.md** - Theme customization tutorial
 - Setup instructions for AudioManager
 - Prefab creation guides
 - UI configuration details
