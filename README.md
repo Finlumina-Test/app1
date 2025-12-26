@@ -213,8 +213,6 @@ Assets/
 - Adjust `gameOverHeight` in GameManager
 - Modify gravity scale in NumberBall
 
-## 💰 Selling Tips for SellMyApp.com
-
 ### What Makes This Valuable:
 ✅ **Unique Mechanic** - Not just another 2048 clone
 ✅ **Easy to Reskin** - Change visuals without touching code
