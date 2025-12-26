@@ -1,5 +1,5 @@
-// Shoot & Merge Game - HTML5 Canvas Version
-// Complete playable 2048 ball shooter game
+// Shoot & Merge Game - Enhanced Version with Polish
+// Complete playable 2048 ball shooter with sound, particles, and effects
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -11,7 +11,7 @@ const SHOOT_FORCE = 12;
 const GAME_OVER_LINE = 120;
 const FLOOR_Y = canvas.height - 50;
 
-// Color scheme for numbers (matching Unity version)
+// Color scheme for numbers
 const COLORS = {
     2: '#EDE0C8',
     4: '#EDF0C8',
@@ -26,6 +26,111 @@ const COLORS = {
     2048: '#EEC22E'
 };
 
+// Sound System (Web Audio API)
+class SoundSystem {
+    constructor() {
+        this.audioContext = null;
+        this.sounds = {};
+        this.musicGain = null;
+        this.sfxGain = null;
+        this.enabled = true;
+    }
+
+    init() {
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            this.sfxGain = this.audioContext.createGain();
+            this.sfxGain.connect(this.audioContext.destination);
+            this.sfxGain.gain.value = 0.3;
+
+            this.musicGain = this.audioContext.createGain();
+            this.musicGain.connect(this.audioContext.destination);
+            this.musicGain.gain.value = 0.15;
+        } catch (e) {
+            console.log('Web Audio API not supported');
+            this.enabled = false;
+        }
+    }
+
+    playShoot() {
+        if (!this.enabled || !this.audioContext) return;
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.sfxGain);
+
+        oscillator.frequency.value = 400;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.1);
+    }
+
+    playMerge(value) {
+        if (!this.enabled || !this.audioContext) return;
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.sfxGain);
+
+        oscillator.frequency.value = 200 + (Math.log2(value) * 50);
+        oscillator.type = 'triangle';
+
+        gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.2);
+    }
+
+    playGameOver() {
+        if (!this.enabled || !this.audioContext) return;
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.sfxGain);
+
+        oscillator.frequency.setValueAtTime(400, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 0.5);
+        oscillator.type = 'sawtooth';
+
+        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.5);
+    }
+}
+
+const soundSystem = new SoundSystem();
+
+// Screen shake effect
+let screenShake = { x: 0, y: 0, intensity: 0 };
+
+function shakeScreen(intensity) {
+    screenShake.intensity = intensity;
+}
+
+function updateScreenShake() {
+    if (screenShake.intensity > 0) {
+        screenShake.x = (Math.random() - 0.5) * screenShake.intensity;
+        screenShake.y = (Math.random() - 0.5) * screenShake.intensity;
+        screenShake.intensity *= 0.9;
+
+        if (screenShake.intensity < 0.1) {
+            screenShake.intensity = 0;
+            screenShake.x = 0;
+            screenShake.y = 0;
+        }
+    }
+}
+
 // Game state
 let balls = [];
 let currentBall = null;
@@ -35,6 +140,8 @@ let isGameOver = false;
 let isDragging = false;
 let aimStart = { x: 0, y: 0 };
 let aimEnd = { x: 0, y: 0 };
+let showTutorial = !localStorage.getItem('tutorialShown');
+let gameStarted = false;
 
 // Ball class
 class Ball {
@@ -48,8 +155,9 @@ class Ball {
         this.isShot = vx !== 0 || vy !== 0;
         this.canMerge = false;
         this.toDelete = false;
+        this.scale = 0.8;
+        this.targetScale = 1;
 
-        // Enable merge after short delay
         if (this.isShot) {
             setTimeout(() => { this.canMerge = true; }, 100);
         } else {
@@ -58,12 +166,12 @@ class Ball {
     }
 
     update() {
+        // Smooth scale animation
+        this.scale += (this.targetScale - this.scale) * 0.1;
+
         if (!this.isShot) return;
 
-        // Apply gravity
         this.vy += GRAVITY;
-
-        // Update position
         this.x += this.vx;
         this.y += this.vy;
 
@@ -83,7 +191,6 @@ class Ball {
             this.vy *= -0.6;
             this.vx *= 0.95;
 
-            // Stop if moving very slowly
             if (Math.abs(this.vy) < 0.5 && Math.abs(this.vx) < 0.5) {
                 this.vy = 0;
                 this.vx = 0;
@@ -100,11 +207,9 @@ class Ball {
             const minDist = this.radius + other.radius;
 
             if (distance < minDist) {
-                // Check for merge
                 if (this.canMerge && other.canMerge && this.value === other.value && this.isShot) {
                     this.merge(other);
                 } else {
-                    // Collision response
                     const angle = Math.atan2(dy, dx);
                     const targetX = this.x + Math.cos(angle) * minDist;
                     const targetY = this.y + Math.sin(angle) * minDist;
@@ -117,7 +222,6 @@ class Ball {
                     other.vx += ax;
                     other.vy += ay;
 
-                    // Separate balls
                     const overlap = minDist - distance;
                     const separateX = (dx / distance) * overlap * 0.5;
                     const separateY = (dy / distance) * overlap * 0.5;
@@ -134,38 +238,57 @@ class Ball {
     merge(other) {
         if (other.toDelete) return;
 
-        // Mark for deletion
         this.toDelete = true;
         other.toDelete = true;
 
-        // Create new ball with doubled value
         const newValue = this.value * 2;
         const mergeX = (this.x + other.x) / 2;
         const mergeY = (this.y + other.y) / 2;
         const newBall = new Ball(mergeX, mergeY, newValue);
         newBall.isShot = true;
-        newBall.vy = -2; // Small upward bounce
+        newBall.vy = -2;
+        newBall.scale = 1.3;
         balls.push(newBall);
 
-        // Update score
         score += newValue;
         updateScore();
 
-        // Visual feedback
+        // Effects
         createMergeEffect(mergeX, mergeY, newValue);
+        shakeScreen(5);
+        soundSystem.playMerge(newValue);
     }
 
     draw() {
+        const drawRadius = this.radius * this.scale;
+
         // Shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.save();
+        ctx.globalAlpha = 0.2;
+        ctx.fillStyle = '#000';
         ctx.beginPath();
-        ctx.arc(this.x + 2, this.y + 2, this.radius, 0, Math.PI * 2);
+        ctx.arc(this.x + 2, this.y + 2, drawRadius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
+
+        // Glow for high values
+        if (this.value >= 128) {
+            ctx.save();
+            ctx.globalAlpha = 0.3;
+            const gradient = ctx.createRadialGradient(this.x, this.y, drawRadius * 0.5, this.x, this.y, drawRadius * 1.5);
+            gradient.addColorStop(0, COLORS[this.value]);
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, drawRadius * 1.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
 
         // Ball
         ctx.fillStyle = COLORS[this.value] || '#CDC1B4';
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, drawRadius, 0, Math.PI * 2);
         ctx.fill();
 
         // Border
@@ -182,47 +305,66 @@ class Ball {
     }
 }
 
-// Particle effects
+// Enhanced Particle System
 let particles = [];
 
 class Particle {
-    constructor(x, y) {
+    constructor(x, y, color) {
         this.x = x;
         this.y = y;
-        this.vx = (Math.random() - 0.5) * 6;
-        this.vy = (Math.random() - 0.5) * 6;
+        this.vx = (Math.random() - 0.5) * 8;
+        this.vy = (Math.random() - 0.5) * 8 - 2;
         this.life = 1;
-        this.decay = 0.02;
+        this.decay = 0.015;
+        this.size = Math.random() * 4 + 2;
+        this.color = color || 'gold';
     }
 
     update() {
         this.x += this.vx;
         this.y += this.vy;
+        this.vy += 0.2;
         this.life -= this.decay;
+        this.size *= 0.98;
     }
 
     draw() {
-        ctx.fillStyle = `rgba(255, 215, 0, ${this.life})`;
+        ctx.save();
+        ctx.globalAlpha = this.life;
+
+        // Glow effect
+        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+        gradient.addColorStop(0, this.color);
+        gradient.addColorStop(1, 'transparent');
+
+        ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
     }
 }
 
 function createMergeEffect(x, y, value) {
-    for (let i = 0; i < 15; i++) {
-        particles.push(new Particle(x, y));
+    const color = COLORS[value] || 'gold';
+    for (let i = 0; i < 25; i++) {
+        particles.push(new Particle(x, y, color));
     }
 }
 
 // Initialize game
 function init() {
+    soundSystem.init();
     updateScore();
     spawnNextBall();
+
+    if (!showTutorial) {
+        gameStarted = true;
+    }
+
     gameLoop();
 }
 
-// Spawn new ball for shooting
 function spawnNextBall() {
     if (isGameOver) return;
 
@@ -265,6 +407,12 @@ canvas.addEventListener('touchend', (e) => {
 function startAim(e) {
     if (isGameOver || !currentBall) return;
 
+    if (showTutorial) {
+        showTutorial = false;
+        gameStarted = true;
+        localStorage.setItem('tutorialShown', 'true');
+    }
+
     const rect = canvas.getBoundingClientRect();
     aimStart.x = e.clientX - rect.left;
     aimStart.y = e.clientY - rect.top;
@@ -288,14 +436,12 @@ function shoot() {
     const dy = aimEnd.y - aimStart.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    if (distance < 10) return; // Minimum drag distance
+    if (distance < 10) return;
 
-    // Calculate shoot direction (opposite of drag)
     const angle = Math.atan2(dy, dx);
     const vx = -Math.cos(angle) * SHOOT_FORCE;
     const vy = -Math.sin(angle) * SHOOT_FORCE;
 
-    // Make sure we shoot upward
     if (vy > -2) return;
 
     currentBall.vx = vx;
@@ -306,11 +452,11 @@ function shoot() {
     balls.push(currentBall);
     currentBall = null;
 
-    // Spawn next ball after delay
+    soundSystem.playShoot();
+
     setTimeout(spawnNextBall, 500);
 }
 
-// Update score display
 function updateScore() {
     document.getElementById('score').textContent = score;
     document.getElementById('highScore').textContent = highScore;
@@ -321,11 +467,9 @@ function updateScore() {
     }
 }
 
-// Check game over
 function checkGameOver() {
     for (let ball of balls) {
         if (ball.y - ball.radius < GAME_OVER_LINE) {
-            // Check if ball is relatively still
             if (Math.abs(ball.vx) < 1 && Math.abs(ball.vy) < 1) {
                 triggerGameOver();
                 return;
@@ -338,6 +482,9 @@ function triggerGameOver() {
     if (isGameOver) return;
 
     isGameOver = true;
+    soundSystem.playGameOver();
+    shakeScreen(15);
+
     document.getElementById('finalScore').textContent = score;
     document.getElementById('finalBest').textContent = highScore;
     document.getElementById('gameOver').style.display = 'block';
@@ -350,6 +497,7 @@ function restartGame() {
     isGameOver = false;
     isDragging = false;
     currentBall = null;
+    gameStarted = true;
 
     document.getElementById('gameOver').style.display = 'none';
     updateScore();
@@ -358,6 +506,9 @@ function restartGame() {
 
 // Draw everything
 function draw() {
+    ctx.save();
+    ctx.translate(screenShake.x, screenShake.y);
+
     // Clear canvas
     ctx.fillStyle = '#faf8ef';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -376,6 +527,9 @@ function draw() {
     ctx.fillStyle = '#bbada0';
     ctx.fillRect(0, FLOOR_Y, canvas.width, canvas.height - FLOOR_Y);
 
+    // Draw particles (behind balls)
+    particles.forEach(p => p.draw());
+
     // Draw balls
     balls.forEach(ball => ball.draw());
 
@@ -385,18 +539,16 @@ function draw() {
     }
 
     // Draw aim line
-    if (isDragging && currentBall) {
+    if (isDragging && currentBall && gameStarted) {
         const dx = aimEnd.x - aimStart.x;
         const dy = aimEnd.y - aimStart.y;
 
-        // Draw trajectory
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(102, 126, 234, 0.6)';
+        ctx.lineWidth = 4;
         ctx.setLineDash([10, 5]);
         ctx.beginPath();
         ctx.moveTo(currentBall.x, currentBall.y);
 
-        // Draw predicted path
         let px = currentBall.x;
         let py = currentBall.y;
         let pvx = -Math.cos(Math.atan2(dy, dx)) * SHOOT_FORCE;
@@ -416,31 +568,55 @@ function draw() {
         ctx.setLineDash([]);
     }
 
-    // Draw particles
-    particles.forEach(p => p.draw());
+    ctx.restore();
+
+    // Draw tutorial overlay
+    if (showTutorial) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('How to Play', canvas.width / 2, 150);
+
+        ctx.font = '18px Arial';
+        ctx.fillText('1. Drag to aim', canvas.width / 2, 200);
+        ctx.fillText('2. Release to shoot', canvas.width / 2, 240);
+        ctx.fillText('3. Match numbers to merge', canvas.width / 2, 280);
+        ctx.fillText('4. Don\'t let balls reach the red line!', canvas.width / 2, 320);
+
+        ctx.font = 'bold 20px Arial';
+        ctx.fillStyle = '#FFD700';
+        ctx.fillText('Click anywhere to start!', canvas.width / 2, 400);
+
+        // Animated arrow
+        const arrowY = 500 + Math.sin(Date.now() / 200) * 10;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2, arrowY);
+        ctx.lineTo(canvas.width / 2 - 15, arrowY - 20);
+        ctx.lineTo(canvas.width / 2 + 15, arrowY - 20);
+        ctx.fill();
+    }
 }
 
-// Update game state
 function update() {
-    if (isGameOver) return;
+    if (isGameOver || !gameStarted) return;
 
-    // Update balls
     balls.forEach(ball => ball.update());
-
-    // Remove merged balls
     balls = balls.filter(ball => !ball.toDelete);
 
-    // Update particles
     particles.forEach(p => p.update());
     particles = particles.filter(p => p.life > 0);
 
-    // Check game over
+    updateScreenShake();
+
     if (balls.length > 3) {
         checkGameOver();
     }
 }
 
-// Game loop
 function gameLoop() {
     update();
     draw();
