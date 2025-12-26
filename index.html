@@ -3,277 +3,283 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shoot & Merge - 2048 Ball Shooter Game</title>
+    <title>Shoot & Merge Engine | Unity Source Code</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700&family=Audiowide&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary: #FFD700;
+            --accent: #FF6B6B;
+            --dark: #1a1a2e;
+            --glass: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.15);
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: white;
             min-height: 100vh;
-            padding: 20px;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        .container {
+        /* --- Navbar --- */
+        nav {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo { font-family: 'Audiowide', cursive; font-size: 1.4rem; color: var(--primary); }
+        .nav-links a { color: rgba(255,255,255,0.7); text-decoration: none; margin-left: 20px; font-weight: 600; transition: 0.3s; }
+        .nav-links a:hover { color: white; }
+
+        /* --- Hero Section --- */
+        .hero {
+            padding: 160px 20px 80px;
             max-width: 1200px;
             margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            padding: 40px 0;
-        }
-
-        h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .tagline {
-            font-size: 1.3em;
-            opacity: 0.9;
-        }
-
-        .hero {
-            background: rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 40px;
-            margin: 30px 0;
-            backdrop-filter: blur(10px);
-        }
-
-        .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 60px;
+            align-items: center;
         }
 
-        .feature {
-            background: rgba(255,255,255,0.1);
-            padding: 25px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s;
+        .hero-content h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #fff, #a5a5a5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .feature:hover {
-            transform: translateY(-5px);
-            background: rgba(255,255,255,0.15);
+        .hero-tag {
+            display: inline-block;
+            background: rgba(255, 107, 107, 0.2);
+            color: var(--accent);
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
         }
 
-        .feature h3 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
+        .hero p { font-size: 1.2rem; color: rgba(255,255,255,0.7); margin-bottom: 40px; max-width: 500px; }
 
-        .cta-section {
-            text-align: center;
-            margin: 50px 0;
-        }
+        .btn-group { display: flex; gap: 15px; }
 
         .btn {
-            display: inline-block;
-            background: white;
-            color: #667eea;
-            padding: 15px 40px;
-            border-radius: 50px;
+            padding: 15px 35px;
+            border-radius: 12px;
             text-decoration: none;
-            font-weight: bold;
-            font-size: 1.2em;
-            margin: 10px;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-weight: 700;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+        .btn-primary {
+            background: var(--primary);
+            color: var(--dark);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
+        
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(255, 215, 0, 0.5); }
 
-        .btn-secondary {
-            background: rgba(255,255,255,0.2);
+        .btn-outline {
+            border: 2px solid rgba(255,255,255,0.2);
             color: white;
-            border: 2px solid white;
+            backdrop-filter: blur(5px);
+        }
+        
+        .btn-outline:hover { border-color: white; background: rgba(255,255,255,0.05); }
+
+        /* --- Phone Mockup Animation --- */
+        .phone-mockup {
+            position: relative;
+            background: #000;
+            border-radius: 40px;
+            border: 8px solid #333;
+            aspect-ratio: 9/19;
+            width: 300px;
+            margin: 0 auto;
+            box-shadow: 0 0 50px rgba(102, 126, 234, 0.2);
+            overflow: hidden;
+            transform: rotate(-5deg);
+            transition: 0.5s;
         }
 
-        .price-tag {
-            background: #ffd700;
-            color: #333;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-size: 1.5em;
-            font-weight: bold;
-            display: inline-block;
-            margin: 20px 0;
+        .phone-mockup:hover { transform: rotate(0deg) scale(1.02); }
+        .phone-mockup iframe { width: 100%; height: 100%; border: none; }
+
+        /* --- Features Strip --- */
+        .stats-strip {
+            background: var(--glass);
+            border-y: 1px solid var(--border);
+            padding: 30px 0;
+            margin-top: 50px;
         }
 
-        .screenshot-placeholder {
-            background: rgba(0,0,0,0.2);
-            border-radius: 15px;
-            padding: 100px;
-            text-align: center;
-            margin: 30px 0;
-            border: 3px dashed rgba(255,255,255,0.3);
-        }
-
-        .tech-stack {
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
+            justify-content: space-around;
             flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin: 20px 0;
+            gap: 20px;
         }
 
-        .tech-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 16px;
+        .stat-item { text-align: center; }
+        .stat-val { display: block; font-size: 2rem; font-weight: 700; color: white; }
+        .stat-label { font-size: 0.9rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* --- Value Grid --- */
+        .features-section { padding: 100px 20px; max-width: 1200px; margin: 0 auto; }
+        .section-title { text-align: center; font-size: 2.5rem; margin-bottom: 60px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+
+        .card {
+            background: var(--glass);
+            padding: 30px;
             border-radius: 20px;
-            font-size: 0.9em;
+            border: 1px solid var(--border);
+            transition: 0.3s;
         }
 
-        footer {
-            text-align: center;
-            padding: 40px 0;
-            opacity: 0.8;
+        .card:hover { background: rgba(255,255,255,0.12); transform: translateY(-5px); }
+        .card h3 { font-size: 1.4rem; margin-bottom: 15px; color: var(--primary); }
+        .card p { color: rgba(255,255,255,0.7); font-size: 0.95rem; }
+
+        /* --- Reskin Preview --- */
+        .reskin-section {
+            background: linear-gradient(to right, rgba(0,0,0,0.3), rgba(0,0,0,0));
+            padding: 80px 20px;
+            border-top: 1px solid var(--border);
         }
 
+        .reskin-container { max-width: 1000px; margin: 0 auto; text-align: center; }
+        .reskin-tags { display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+        .tag { background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; border: 1px solid var(--border); }
+
+        /* --- Mobile Responsive --- */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2em;
-            }
-
-            .tagline {
-                font-size: 1em;
-            }
-
-            .hero {
-                padding: 20px;
-            }
+            .hero { grid-template-columns: 1fr; text-align: center; padding-top: 100px; }
+            .hero-content h1 { font-size: 2.5rem; }
+            .btn-group { justify-content: center; }
+            .phone-mockup { width: 260px; transform: rotate(0); margin-top: 40px; }
+            nav { padding: 20px; }
+            .nav-links { display: none; } 
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎯 Shoot & Merge</h1>
-            <p class="tagline">2048 Meets Bubble Shooter - A Unique Physics Puzzle Game</p>
-        </header>
 
-        <div class="hero">
-            <div class="screenshot-placeholder">
-                <h2>🎮 <a href="game.html" style="color: white; text-decoration: none;">Play Now →</a></h2>
-                <p style="margin-top: 20px; opacity: 0.8;">Click to try the live demo!</p>
+    <nav>
+        <div class="logo">FINLUMINA</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="README.md" target="_blank">Documentation</a>
+            <a href="SELLING_GUIDE.md" target="_blank">Reselling</a>
+            <a href="game.html" class="btn-primary" style="padding: 8px 20px; margin-left: 30px; color: #1a1a2e;">Play Demo</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <span class="hero-tag">🔥 Trending Logic</span>
+            <h1>Launch Your Own <br>Viral 2048 Hit.</h1>
+            <p>The sticky mechanics of Bubble Shooter meet the addictive logic of 2048. A production-ready Unity template built for high retention and <strong>infinite reskin potential</strong>.</p>
+            
+            <div class="btn-group">
+                <a href="game.html" class="btn btn-primary">▶ Play Web Demo</a>
+                <a href="https://github.com/Finlumina-Test/app1" class="btn btn-outline">View Source Code</a>
             </div>
-
-            <h2 style="text-align: center; margin: 30px 0;">💰 Complete Unity Source Code</h2>
-            <div class="price-tag">$19 - $45</div>
-
-            <div class="tech-stack">
-                <span class="tech-badge">✅ Unity 2021.3+</span>
-                <span class="tech-badge">✅ Full Source Code</span>
-                <span class="tech-badge">✅ Mobile Ready</span>
-                <span class="tech-badge">✅ Easy to Reskin</span>
-                <span class="tech-badge">✅ Well Documented</span>
+            
+            <div style="margin-top: 30px; font-size: 0.9rem; opacity: 0.6;">
+                ✅ Unity 2021.3+ &nbsp; • &nbsp; ✅ Mobile Ready &nbsp; • &nbsp; ✅ Clean Code
             </div>
         </div>
 
-        <div class="features">
-            <div class="feature">
-                <h3>🎯 Physics-Based</h3>
-                <p>Realistic ball physics with trajectory preview. Drag to aim, release to shoot!</p>
-            </div>
-
-            <div class="feature">
-                <h3>🔢 Number Merging</h3>
-                <p>Match identical numbers to merge: 2+2=4, 4+4=8, up to 2048 and beyond!</p>
-            </div>
-
-            <div class="feature">
-                <h3>🎨 Color Coded</h3>
-                <p>11 beautiful color tiers for each number level. Visually satisfying progression.</p>
-            </div>
-
-            <div class="feature">
-                <h3>📱 Mobile Ready</h3>
-                <p>Touch controls built-in. Deploy to iOS/Android or WebGL with one click.</p>
-            </div>
-
-            <div class="feature">
-                <h3>💯 Scoring System</h3>
-                <p>Track scores and high scores with persistent data. Keeps players engaged!</p>
-            </div>
-
-            <div class="feature">
-                <h3>✨ Particle Effects</h3>
-                <p>Satisfying visual feedback on every merge. Juice it up more if you want!</p>
+        <div class="hero-visual">
+            <div class="phone-mockup">
+                <iframe src="game.html" scrolling="no"></iframe>
             </div>
         </div>
+    </header>
 
-        <div class="hero">
-            <h2 style="margin-bottom: 20px;">📦 What's Included</h2>
-            <ul style="list-style: none; line-height: 2; font-size: 1.1em;">
-                <li>✅ 5 Complete C# Scripts (1,615 lines)</li>
-                <li>✅ Full Unity Project Structure</li>
-                <li>✅ Comprehensive Documentation</li>
-                <li>✅ Quick Start Guide (5 minutes)</li>
-                <li>✅ Reskin Guide (Fruit, Emoji, Space themes)</li>
-                <li>✅ Selling Strategy Guide</li>
-                <li>✅ No External Dependencies</li>
-                <li>✅ Clean, Commented Code</li>
-            </ul>
-        </div>
-
-        <div class="hero">
-            <h2 style="margin-bottom: 20px;">🎨 Easy Reskin Ideas</h2>
-            <div class="features">
-                <div class="feature">
-                    <h3>🍎 Fruit Merge</h3>
-                    <p>Grapes → Strawberry → Apple → Watermelon</p>
-                </div>
-                <div class="feature">
-                    <h3>😀 Emoji Merge</h3>
-                    <p>Perfect for younger audiences</p>
-                </div>
-                <div class="feature">
-                    <h3>🪐 Space Planets</h3>
-                    <p>Educational + fun combination</p>
-                </div>
-                <div class="feature">
-                    <h3>🍬 Candy Theme</h3>
-                    <p>Familiar Candy Crush aesthetic</p>
-                </div>
+    <div class="stats-strip">
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-val">10 min</span>
+                <span class="stat-label">Setup Time</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-val">100%</span>
+                <span class="stat-label">C# Native</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-val">3</span>
+                <span class="stat-label">Major Reskin Ideas</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-val">$45+</span>
+                <span class="stat-label">Resale Value</span>
             </div>
         </div>
-
-        <div class="cta-section">
-            <h2 style="margin-bottom: 30px;">Try It Now!</h2>
-            <a href="game.html" class="btn">🎮 Play Demo</a>
-            <a href="README.md" class="btn btn-secondary">📖 View Documentation</a>
-            <a href="https://github.com/Finlumina-Test/app1" class="btn btn-secondary">💻 GitHub Repo</a>
-        </div>
-
-        <div class="hero">
-            <h2 style="margin-bottom: 20px;">🚀 Quick Stats</h2>
-            <div style="text-align: center; font-size: 1.2em;">
-                <p>⏱️ <strong>Setup Time:</strong> 5-10 minutes</p>
-                <p>🎨 <strong>Reskin Time:</strong> 1-3 hours</p>
-                <p>💰 <strong>Resale Value:</strong> $15-$45 per license</p>
-                <p>📱 <strong>Platforms:</strong> iOS, Android, WebGL</p>
-                <p>🔧 <strong>Difficulty:</strong> Beginner-friendly</p>
-            </div>
-        </div>
-
-        <footer>
-            <p>Built with Unity • Ready for SellMyApp.com • Commercial License</p>
-            <p style="margin-top: 10px;">© 2024 - Customize and sell as your own!</p>
-        </footer>
     </div>
+
+    <section class="features-section" id="features">
+        <h2 class="section-title">Why Developers Buy This Engine</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>🎨 Reskin Ready</h3>
+                <p>Don't sell "just another clone". Change the balls to <strong>Planets</strong>, <strong>Fruits</strong> (Suika style), or <strong>Candies</strong> in minutes. The code handles the rest.</p>
+            </div>
+            <div class="card">
+                <h3>⚡ Performance First</h3>
+                <p>Optimized physics interactions. Smooth 60 FPS on mobile devices. Uses Unity's native 2D physics engine for realistic bounces.</p>
+            </div>
+            <div class="card">
+                <h3>💰 Monetization Ready</h3>
+                <p>Structured code makes it trivial to insert Interstitial Ads between "Game Over" and "Restart". The perfect spot for revenue.</p>
+            </div>
+            <div class="card">
+                <h3>🛠️ Clean Architecture</h3>
+                <p>No spaghetti code. Separate Managers for UI, Game State, and Audio. Fully commented C# scripts that you can actually read.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="reskin-section">
+        <div class="reskin-container">
+            <h2 style="font-size: 2rem; margin-bottom: 20px;">One Engine. Infinite Games.</h2>
+            <p style="opacity: 0.8; max-width: 600px; margin: 0 auto;">Buyers aren't just buying 2048. They are buying a foundation for the next "Watermelon Game" or "Planet Merge".</p>
+            
+            <div class="reskin-tags">
+                <span class="tag">🍉 Fruit Merge Theme</span>
+                <span class="tag">🪐 Space/Planet Theme</span>
+                <span class="tag">🍬 Candy Crush Theme</span>
+                <span class="tag">⚽ Sports Theme</span>
+            </div>
+
+            <div style="margin-top: 50px;">
+                <a href="RESKIN_GUIDE.md" style="color: var(--primary); text-decoration: none; border-bottom: 1px dashed var(--primary);">Read the Reskin Guide →</a>
+            </div>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 40px; opacity: 0.5; font-size: 0.9rem;">
+        <p>Built for SellMyApp • Commercial License Included</p>
+    </footer>
+
 </body>
 </html>
