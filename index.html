@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shoot & Merge - 2048 Ball Shooter Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tagline {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+
+        .hero {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 30px 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .feature h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .price-tag {
+            background: #ffd700;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .screenshot-placeholder {
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            padding: 100px;
+            text-align: center;
+            margin: 30px 0;
+            border: 3px dashed rgba(255,255,255,0.3);
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .tech-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .tagline {
+                font-size: 1em;
+            }
+
+            .hero {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Shoot & Merge</h1>
+            <p class="tagline">2048 Meets Bubble Shooter - A Unique Physics Puzzle Game</p>
+        </header>
+
+        <div class="hero">
+            <div class="screenshot-placeholder">
+                <h2>🎮 Game Demo Coming Soon</h2>
+                <p style="margin-top: 20px; opacity: 0.8;">WebGL build will be embedded here</p>
+            </div>
+
+            <h2 style="text-align: center; margin: 30px 0;">💰 Complete Unity Source Code</h2>
+            <div class="price-tag">$19 - $45</div>
+
+            <div class="tech-stack">
+                <span class="tech-badge">✅ Unity 2021.3+</span>
+                <span class="tech-badge">✅ Full Source Code</span>
+                <span class="tech-badge">✅ Mobile Ready</span>
+                <span class="tech-badge">✅ Easy to Reskin</span>
+                <span class="tech-badge">✅ Well Documented</span>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <h3>🎯 Physics-Based</h3>
+                <p>Realistic ball physics with trajectory preview. Drag to aim, release to shoot!</p>
+            </div>
+
+            <div class="feature">
+                <h3>🔢 Number Merging</h3>
+                <p>Match identical numbers to merge: 2+2=4, 4+4=8, up to 2048 and beyond!</p>
+            </div>
+
+            <div class="feature">
+                <h3>🎨 Color Coded</h3>
+                <p>11 beautiful color tiers for each number level. Visually satisfying progression.</p>
+            </div>
+
+            <div class="feature">
+                <h3>📱 Mobile Ready</h3>
+                <p>Touch controls built-in. Deploy to iOS/Android or WebGL with one click.</p>
+            </div>
+
+            <div class="feature">
+                <h3>💯 Scoring System</h3>
+                <p>Track scores and high scores with persistent data. Keeps players engaged!</p>
+            </div>
+
+            <div class="feature">
+                <h3>✨ Particle Effects</h3>
+                <p>Satisfying visual feedback on every merge. Juice it up more if you want!</p>
+            </div>
+        </div>
+
+        <div class="hero">
+            <h2 style="margin-bottom: 20px;">📦 What's Included</h2>
+            <ul style="list-style: none; line-height: 2; font-size: 1.1em;">
+                <li>✅ 5 Complete C# Scripts (1,615 lines)</li>
+                <li>✅ Full Unity Project Structure</li>
+                <li>✅ Comprehensive Documentation</li>
+                <li>✅ Quick Start Guide (5 minutes)</li>
+                <li>✅ Reskin Guide (Fruit, Emoji, Space themes)</li>
+                <li>✅ Selling Strategy Guide</li>
+                <li>✅ No External Dependencies</li>
+                <li>✅ Clean, Commented Code</li>
+            </ul>
+        </div>
+
+        <div class="hero">
+            <h2 style="margin-bottom: 20px;">🎨 Easy Reskin Ideas</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>🍎 Fruit Merge</h3>
+                    <p>Grapes → Strawberry → Apple → Watermelon</p>
+                </div>
+                <div class="feature">
+                    <h3>😀 Emoji Merge</h3>
+                    <p>Perfect for younger audiences</p>
+                </div>
+                <div class="feature">
+                    <h3>🪐 Space Planets</h3>
+                    <p>Educational + fun combination</p>
+                </div>
+                <div class="feature">
+                    <h3>🍬 Candy Theme</h3>
+                    <p>Familiar Candy Crush aesthetic</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2 style="margin-bottom: 30px;">Ready to Launch Your Own Version?</h2>
+            <a href="#" class="btn">📥 Download Source Code</a>
+            <a href="#" class="btn btn-secondary">📖 View Documentation</a>
+            <a href="https://github.com/yourusername/shoot-merge" class="btn btn-secondary">💻 GitHub Repo</a>
+        </div>
+
+        <div class="hero">
+            <h2 style="margin-bottom: 20px;">🚀 Quick Stats</h2>
+            <div style="text-align: center; font-size: 1.2em;">
+                <p>⏱️ <strong>Setup Time:</strong> 5-10 minutes</p>
+                <p>🎨 <strong>Reskin Time:</strong> 1-3 hours</p>
+                <p>💰 <strong>Resale Value:</strong> $15-$45 per license</p>
+                <p>📱 <strong>Platforms:</strong> iOS, Android, WebGL</p>
+                <p>🔧 <strong>Difficulty:</strong> Beginner-friendly</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built with Unity • Ready for SellMyApp.com • Commercial License</p>
+            <p style="margin-top: 10px;">© 2024 - Customize and sell as your own!</p>
+        </footer>
+    </div>
+</body>
+</html>
