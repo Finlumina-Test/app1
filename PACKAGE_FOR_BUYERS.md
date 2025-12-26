@@ -318,10 +318,36 @@ Take these 5 screenshots:
 
 ## 🎊 You're Ready!
 
-Everything is set up. Just:
-1. ZIP the files listed above
-2. Upload to SellMyApp.com
-3. Use the description provided
+### Step 1: Create the ZIP File
+
+Run this command in your project folder:
+
+```bash
+cd /home/user/app1
+
+zip -r ShootAndMerge_Complete.zip \
+  game.html \
+  game.js \
+  index.html \
+  README.md \
+  QUICK_START.md \
+  RESKIN_GUIDE.md \
+  .gitignore \
+  Assets/
+```
+
+This creates a clean package with:
+- ✅ HTML5 playable game
+- ✅ Landing page
+- ✅ 3 documentation guides (Setup, Quick Start, Reskin)
+- ✅ All Unity C# scripts
+- ✅ Unity project structure
+
+### Step 2: Upload & List
+
+1. Go to SellMyApp.com
+2. Upload ShootAndMerge_Complete.zip
+3. Copy description from above
 4. Price at $49
 5. Wait for sales! 💰
 
